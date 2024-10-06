@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 // })->middleware('auth:sanctum');
 
 Route::get('/tasks', [TaskController::class, 'index']);
+Route::get('{user_id}/tasks', [TaskController::class, 'getUserTasks']);
 Route::prefix('/task')->group( function() {
     Route::post('/store', [TaskController::class, 'store']);
     Route::put('/update/{id}', [TaskController::class, 'update']);

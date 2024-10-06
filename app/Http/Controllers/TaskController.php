@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EditTaskRequest;
 use App\Http\Requests\TaskFormRequest;
+use App\Models\Reminder;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +22,28 @@ class TaskController extends Controller
         $tasks = Task::all();
         // Return the tasks as a JSON response (ideal for APIs)
         return response()->json($tasks);
+    }
+
+    /**
+     * Display a listing of the user's registerd tasks.
+    */
+    public function getUserTasks($user_id)
+    {
+        // Find the user by ID
+        $user = User::find($user_id);
+
+        // Check if the user exists
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+        // Fetch all tasks for the user using the relationship
+        $tasks = $user->tasks()->get();  // or $user->tasks;
+        if ($tasks->isEmpty()) {
+            return response()->json(['message' => 'User has not Tasks']);
+        }
+
+        // Return tasks as JSON
+        return response()->json($tasks, 200);
     }
 
     /**
@@ -46,12 +70,19 @@ class TaskController extends Controller
                 'user_id' => $request->user_id,
                 'category_id' => $request->category_id,
             ]);
-    
-            return response()->json([
-                'status' => 200,
-                'message' => 'Task created successfully',
-                'task' => $task,
-            ]);
+            if ($task) {
+                // Set a remonder for this task
+                $reminder = Reminder::create([
+                    'task_id' => $task->id,
+                    'reminder_time' => $task->due_date,
+                ]);
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Task created successfully',
+                    'task' => $task,
+                    'reminder' => $reminder,
+                ]);
+            }
         } catch (\Exception $e) {
             // Handle foreign key violation
             return response()->json([
