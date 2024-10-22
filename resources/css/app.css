@@ -3,13 +3,11 @@
     margin: 0;
     box-sizing: border-box;
 }
-#app, .navbar {
-    display: flex;
-}
 #app {
     width: 100vw;
     min-height: 100vh;
-    background-color: #000;
+    background-color: #1E1E1E;
+    display: flex;
     justify-content: center;
     align-items: start;
 }
